@@ -3,14 +3,14 @@
     <!-- Background Image -->
     <div 
       class="absolute inset-0 z-0 bg-cover bg-center"
-      style="background-image: url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80'); filter: brightness(0.7);"
+      style="background-image: url('/images/chengdu/hero-teahouse.jpg'); filter: brightness(0.7);"
     ></div>
     
     <!-- Content Container -->
     <div class="relative z-10 w-full max-w-md px-6 py-12 bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl transform transition-all duration-500 hover:scale-[1.01]">
       <div class="text-center mb-8">
         <h1 class="text-4xl font-extrabold text-white mb-2 tracking-wide font-montserrat drop-shadow-md">加入我们</h1>
-        <p class="text-gray-200 text-sm">注册黄山旅游服务平台，开启您的奇妙之旅</p>
+        <p class="text-gray-200 text-sm">注册成都旅游服务平台，开启您的蓉城之旅</p>
       </div>
 
       <el-form 

@@ -7,7 +7,7 @@
             <el-icon class="text-3xl"><Management /></el-icon>
           </div>
           <h2 class="text-2xl font-bold text-white tracking-wide">管理后台登录</h2>
-          <p class="text-gray-400 mt-2 text-sm">黄山旅游服务平台 · 管理员端</p>
+          <p class="text-gray-400 mt-2 text-sm">成都旅游服务平台 · 管理员端</p>
         </div>
 
         <el-form :model="form" class="space-y-6" @submit.prevent="handleLogin">

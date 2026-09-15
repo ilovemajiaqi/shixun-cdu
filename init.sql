@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS huangshan_tourism CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE huangshan_tourism;
+CREATE DATABASE IF NOT EXISTS chengdu_tourism CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE chengdu_tourism;
 
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -57,10 +57,10 @@ INSERT INTO users (username, password, email, role) VALUES ('admin', '123456', '
 INSERT INTO users (username, password, email, role) VALUES ('user', '123456', 'user@example.com', 'USER');
 
 INSERT INTO attractions (name, description, image_url, price, opening_hours, category) VALUES 
-('迎客松', '黄山标志性景观，树龄至少已有800年，黄山“四绝”之一。', 'https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 0.00, '全天', '黄山风景区'),
-('光明顶', '黄山第二高峰，海拔1860米，是看日出、观云海的最佳地点之一。', 'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 0.00, '全天', '黄山风景区'),
-('飞来石', '重约360吨，形态奇特，似从天外飞来，又名“飞来峰”。', 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=2074&auto=format&fit=crop', 0.00, '全天', '黄山风景区');
+('宽窄巷子', '由宽巷子、窄巷子、井巷子三条平行老街组成，成都遗留下来的较成规模的清朝古街道。', '/images/chengdu/kuanzhai.jpg', 0.00, '全天开放', '市区经典'),
+('成都大熊猫繁育研究基地', '世界最大的大熊猫迁地保护与繁育基地，可近距离观察大熊猫。', '/images/chengdu/panda-base.jpg', 55.00, '07:30 - 18:00', '熊猫生态'),
+('都江堰', '战国时期李冰主持修建的宏大水利工程，至今仍在灌溉成都平原，世界文化遗产。', '/images/chengdu/dujiangyan.jpg', 80.00, '08:00 - 18:00', '世界遗产');
 
 INSERT INTO routes (name, description, duration, price) VALUES 
-('黄山一日游精华线', '包含迎客松、光明顶、飞来石等核心景点。', '1天', 190.00),
-('黄山二日游深度线', '深度游览黄山全景，包含住宿一晚。', '2天', 580.00);
+('天府经典一日游', '串联宽窄巷子、人民公园、锦里古街，体验最地道的成都慢生活。', '1天', 190.00),
+('熊猫与古迹深度线', '深度游览大熊猫基地、武侯祠与杜甫草堂，人文与生态兼具。', '2天', 580.00);

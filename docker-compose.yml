@@ -1,10 +1,10 @@
 services:
   db:
     image: mysql:8.0
-    container_name: huangshan_db
+    container_name: chengdu_db
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: huangshan_tourism
+      MYSQL_DATABASE: chengdu_tourism
     volumes:
       - db_data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -21,7 +21,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: huangshan_redis
+    container_name: chengdu_redis
     ports:
       - "6382:6379"
     healthcheck:
@@ -33,12 +33,12 @@ services:
 
   backend:
     build: ./backend
-    container_name: huangshan_backend
+    container_name: chengdu_backend
     ports:
       - "8083:8080"
     restart: always
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/huangshan_tourism?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf-8&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/chengdu_tourism?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf-8&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_DATA_REDIS_HOST: redis
@@ -51,7 +51,7 @@ services:
 
   frontend:
     build: ./frontend
-    container_name: huangshan_frontend
+    container_name: chengdu_frontend
     ports:
       - "3001:80"
     restart: always

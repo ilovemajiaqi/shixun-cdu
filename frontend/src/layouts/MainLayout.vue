@@ -3,7 +3,7 @@
     <el-aside width="240px" class="bg-white shadow-md flex flex-col transition-all duration-300">
       <div class="h-16 flex items-center justify-center border-b border-gray-100 bg-gradient-to-r from-green-500 to-teal-500">
         <span class="text-white text-xl font-bold tracking-wider flex items-center">
-          <el-icon class="mr-2"><Promotion /></el-icon> 黄山旅游
+          <el-icon class="mr-2"><Promotion /></el-icon> 成都旅游
         </span>
       </div>
       
@@ -37,7 +37,7 @@
       </el-menu>
       
       <div class="p-4 border-t border-gray-100 text-center text-xs text-gray-400">
-        &copy; 2026 Huangshan Tourism
+        &copy; 2026 Chengdu Tourism
       </div>
     </el-aside>
     
@@ -45,7 +45,7 @@
       <el-header class="bg-white h-16 shadow-sm flex items-center justify-between px-6 z-10">
         <div class="flex items-center text-gray-500">
           <el-icon class="mr-2 text-lg cursor-pointer hover:text-green-600"><Expand /></el-icon>
-          <span class="text-sm">欢迎来到黄山旅游服务平台</span>
+          <span class="text-sm">欢迎来到成都旅游服务平台</span>
         </div>
         
         <div class="flex items-center space-x-4">

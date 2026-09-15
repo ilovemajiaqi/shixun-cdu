@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2e7d32"/>
+      <stop offset="100%" stop-color="#1b5e20"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#g)"/>
+  <!-- 竹叶 -->
+  <g stroke="#a5d6a7" stroke-width="2.2" stroke-linecap="round" fill="none">
+    <path d="M18 12 L22 26"/>
+    <path d="M14 18 L24 22"/>
+    <path d="M22 14 L18 24"/>
+  </g>
+  <!-- 熊猫脸 -->
+  <circle cx="38" cy="26" r="10" fill="#ffffff"/>
+  <circle cx="33" cy="23" r="4.2" fill="#1b1b1b"/>
+  <circle cx="43" cy="23" r="4.2" fill="#1b1b1b"/>
+  <circle cx="34.2" cy="23.4" r="1.7" fill="#ffffff"/>
+  <circle cx="44.2" cy="23.4" r="1.7" fill="#ffffff"/>
+  <ellipse cx="38" cy="30" rx="2.4" ry="1.8" fill="#1b1b1b"/>
+  <path d="M34 33 Q38 36 42 33" stroke="#1b1b1b" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <!-- 廊桥剪影 -->
+  <path d="M8 50 H56" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M14 50 Q20 38 26 50" stroke="#ffffff" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  <path d="M38 50 Q44 38 50 50" stroke="#ffffff" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+</svg>

@@ -165,7 +165,7 @@ const loadUsers = () => {
   const mockUsers = [
     { id: 1001, username: 'traveler01', email: 'user1@example.com', role: 'user', status: 'active', registerDate: '2025-05-12', avatar: '', password: 'password' },
     { id: 1002, username: 'hiker_pro', email: 'hiker@example.com', role: 'user', status: 'banned', registerDate: '2025-06-01', avatar: '', password: 'password' },
-    { id: 1003, username: 'admin', email: 'admin@huangshan.com', role: 'admin', status: 'active', registerDate: '2025-01-01', avatar: '', password: 'admin' },
+    { id: 1003, username: 'admin', email: 'admin@chengdu.com', role: 'admin', status: 'active', registerDate: '2025-01-01', avatar: '', password: 'admin' },
   ]
 
   // Ensure mock users exist

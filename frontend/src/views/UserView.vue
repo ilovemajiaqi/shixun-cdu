@@ -315,9 +315,9 @@ const currentTab = computed(() => (route.query.tab as string) || 'info')
 
 // Bookings Data
 const bookings = ref([
-  { id: 101, date: '2026-05-01', spotName: '黄山风景区门票 (含索道)', count: 2, price: 380, status: '已支付' },
-  { id: 102, date: '2026-04-15', spotName: '宏村一日游', count: 1, price: 104, status: '已完成' },
-  { id: 103, date: '2026-06-10', spotName: '翡翠谷', count: 3, price: 270, status: '待支付' },
+  { id: 101, date: '2026-05-01', spotName: '成都大熊猫繁育研究基地', count: 2, price: 110, status: '已支付' },
+  { id: 102, date: '2026-04-15', spotName: '都江堰', count: 1, price: 80, status: '已完成' },
+  { id: 103, date: '2026-06-10', spotName: '川剧艺术中心', count: 3, price: 540, status: '待支付' },
 ])
 
 const loadBookings = () => {
@@ -351,8 +351,8 @@ onMounted(async () => {
   })
 
   const favorites = ref([
-    { id: 1, name: '迎客松', desc: '黄山标志性景观，姿态优美。', image: 'https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80' },
-    { id: 2, name: '西海大峡谷', desc: '梦幻般的峡谷风光，云雾缭绕。', image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80' },
+    { id: 1, name: '宽窄巷子', desc: '清代古街，茶馆与市集交错。', image: '/images/chengdu/kuanzhai.jpg' },
+    { id: 2, name: '锦里古街', desc: '红灯夜市与川味小吃一条街。', image: '/images/chengdu/jinli.jpg' },
   ])
 
   const loadFavorites = () => {

@@ -89,9 +89,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 
 const bookings = ref([
-  { orderId: 'ORD-2025070101', user: 'traveler01', spot: '迎客松门票', date: '2025-07-05', quantity: 2, price: 190, total: 380, status: 'paid' },
-  { orderId: 'ORD-2025070102', user: 'hiker_pro', spot: '西海大峡谷缆车', date: '2025-07-06', quantity: 1, price: 100, total: 100, status: 'pending' },
-  { orderId: 'ORD-2025070103', user: 'traveler01', spot: '黄山宾馆', date: '2025-07-05', quantity: 1, price: 800, total: 800, status: 'cancelled' },
+  { orderId: 'ORD-2025070101', user: 'traveler01', spot: '成都大熊猫繁育研究基地', date: '2025-07-05', quantity: 2, price: 55, total: 110, status: 'paid' },
+  { orderId: 'ORD-2025070102', user: 'hiker_pro', spot: '都江堰', date: '2025-07-06', quantity: 1, price: 80, total: 80, status: 'pending' },
+  { orderId: 'ORD-2025070103', user: 'traveler01', spot: '川剧艺术中心', date: '2025-07-05', quantity: 3, price: 180, total: 540, status: 'cancelled' },
 ])
 
 const bookingStatusFilter = ref('')
@@ -109,8 +109,8 @@ const loadOrders = () => {
   } else {
     // Init Mocks
     bookings.value = [
-      { orderId: 'ORD-2025070101', user: 'traveler01', spot: '迎客松门票', date: '2025-07-05', quantity: 2, price: 190, total: 380, status: 'paid' },
-      { orderId: 'ORD-2025070102', user: 'hiker_pro', spot: '西海大峡谷缆车', date: '2025-07-06', quantity: 1, price: 100, total: 100, status: 'pending' },
+      { orderId: 'ORD-2025070101', user: 'traveler01', spot: '成都大熊猫繁育研究基地', date: '2025-07-05', quantity: 2, price: 55, total: 110, status: 'paid' },
+      { orderId: 'ORD-2025070102', user: 'hiker_pro', spot: '都江堰', date: '2025-07-06', quantity: 1, price: 80, total: 80, status: 'pending' },
     ]
     saveOrders()
   }

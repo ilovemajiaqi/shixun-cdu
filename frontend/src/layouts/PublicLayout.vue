@@ -9,7 +9,7 @@
     >
       <div class="flex items-center gap-2">
         <el-icon class="text-2xl" :class="(isScrolled || route.path !== '/') ? 'text-green-600' : 'text-white'"><Promotion /></el-icon>
-        <span class="text-2xl font-bold tracking-wide" :class="(isScrolled || route.path !== '/') ? 'text-gray-800' : 'text-white'">黄山旅游</span>
+        <span class="text-2xl font-bold tracking-wide" :class="(isScrolled || route.path !== '/') ? 'text-gray-800' : 'text-white'">成都旅游</span>
       </div>
 
       <div class="hidden md:flex items-center space-x-8">
@@ -65,8 +65,8 @@
     <footer class="bg-gray-900 text-white py-12">
       <div class="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
-          <h3 class="text-xl font-bold mb-4 flex items-center"><el-icon class="mr-2"><Promotion /></el-icon> 黄山旅游</h3>
-          <p class="text-gray-400 text-sm">五岳归来不看山，黄山归来不看岳。提供最专业的黄山旅游服务。</p>
+          <h3 class="text-xl font-bold mb-4 flex items-center"><el-icon class="mr-2"><Promotion /></el-icon> 成都旅游</h3>
+          <p class="text-gray-400 text-sm">一年成聚，二年成邑，三年成都。提供最专业的成都旅游服务。</p>
         </div>
         <div>
           <h4 class="text-lg font-semibold mb-4">快速链接</h4>
@@ -79,14 +79,14 @@
         <div>
           <h4 class="text-lg font-semibold mb-4">联系我们</h4>
           <p class="text-gray-400 text-sm mb-2">电话: 400-800-8888</p>
-          <p class="text-gray-400 text-sm">邮箱: service@huangshan.com</p>
+          <p class="text-gray-400 text-sm">邮箱: service@chengdu.com</p>
         </div>
         <div>
           <h4 class="text-lg font-semibold mb-4">关注我们</h4>
         </div>
       </div>
       <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500 text-sm">
-        &copy; 2026 Huangshan Tourism Platform. All rights reserved.
+        &copy; 2026 Chengdu Tourism Platform. All rights reserved.
       </div>
     </footer>
   </div>

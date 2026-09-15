@@ -5,7 +5,7 @@
       <!-- Background Image with Blur -->
       <div 
         class="absolute inset-0 z-0 bg-cover bg-center transition-transform duration-1000 transform hover:scale-105"
-        style="background-image: url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80'); filter: blur(2px) brightness(0.85);"
+        style="background-image: url('/images/chengdu/hero-chengdu.jpg'); filter: blur(2px) brightness(0.85);"
       ></div>
       
       <!-- Overlay Gradient -->
@@ -14,10 +14,10 @@
       <!-- Content -->
       <div class="relative z-10 text-center px-4 max-w-5xl mx-auto" data-aos="fade-up">
         <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight leading-tight text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-blue-200 drop-shadow-lg font-montserrat">
-          黄山旅游服务平台
+          成都旅游服务平台
         </h1>
         <p class="text-xl md:text-2xl text-gray-100 mb-10 font-light tracking-wide drop-shadow-md">
-          五岳归来不看山，黄山归来不看岳
+          一年成聚，二年成邑，三年成都
         </p>
         
         <div class="flex flex-col sm:flex-row justify-center gap-6">
@@ -71,24 +71,24 @@ import { Compass, MapLocation, ArrowDown, Camera } from '@element-plus/icons-vue
 
 const carouselItems = [
   {
-    title: '迎客松',
-    desc: '黄山标志性景观，姿态优美，枝干遒劲，仿佛在张开双臂迎接远道而来的客人。',
-    image: 'https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+    title: '成都大熊猫繁育研究基地',
+    desc: '全球最大的大熊猫迁地保护基地，清晨可见熊猫进食攀爬。',
+    image: '/images/chengdu/panda-base.jpg'
   },
   {
-    title: '光明顶',
-    desc: '黄山第二高峰，日出云海的最佳观赏点之一，视野开阔，气象万千。',
-    image: 'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+    title: '宽窄巷子',
+    desc: '三条清代老街并排而立，茶馆、川剧与手作市集交错。',
+    image: '/images/chengdu/kuanzhai.jpg'
   },
   {
-    title: '莲花峰',
-    desc: '黄山最高峰，峻峭高耸，气势雄伟，登顶可一览众山小。',
-    image: 'https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+    title: '都江堰',
+    desc: '两千余年仍在灌溉成都平原的无坝引水工程，世界水利奇迹。',
+    image: '/images/chengdu/dujiangyan.jpg'
   },
   {
-    title: '西海大峡谷',
-    desc: '梦幻般的峡谷风光，云雾缭绕，奇峰林立，是黄山最神秘深邃的区域。',
-    image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+    title: '锦里古街',
+    desc: '夜幕降临红灯次第亮起，被称为成都版清明上河图。',
+    image: '/images/chengdu/jinli.jpg'
   }
 ]
 

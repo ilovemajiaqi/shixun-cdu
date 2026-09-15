@@ -3,7 +3,7 @@
     <el-aside width="240px" class="bg-gray-900 text-white flex flex-col transition-all duration-300">
       <div class="h-16 flex items-center justify-center border-b border-gray-800 bg-gray-900">
         <span class="text-white text-lg font-bold tracking-wider flex items-center">
-          <el-icon class="mr-2 text-blue-500"><Management /></el-icon> 黄山·管理后台
+          <el-icon class="mr-2 text-blue-500"><Management /></el-icon> 成都·管理后台
         </span>
       </div>
       

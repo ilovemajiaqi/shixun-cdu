@@ -59,8 +59,8 @@
         <el-form-item label="标签">
           <el-select v-model="form.tag" class="w-full">
             <el-option label="热门" value="热门" />
-            <el-option label="风景" value="风景" />
-            <el-option label="徒步" value="徒步" />
+            <el-option label="亲子" value="亲子" />
+            <el-option label="风光" value="风光" />
             <el-option label="休闲" value="休闲" />
           </el-select>
         </el-form-item>
@@ -124,12 +124,16 @@ const loadAvailableSpots = () => {
   } else {
     // Fallback defaults if no attraction data exists
     availableSpots.value = [
-      { id: 1, name: '迎客松' },
-      { id: 2, name: '光明顶' },
-      { id: 3, name: '飞来石' },
-      { id: 4, name: '西海大峡谷' },
-      { id: 5, name: '北海宾馆' },
-      { id: 6, name: '慈光阁' },
+      { id: 1, name: '宽窄巷子' },
+      { id: 2, name: '锦里古街' },
+      { id: 3, name: '武侯祠' },
+      { id: 4, name: '杜甫草堂' },
+      { id: 5, name: '熊猫基地' },
+      { id: 6, name: '人民公园' },
+      { id: 7, name: '都江堰' },
+      { id: 8, name: '青城山' },
+      { id: 9, name: '西岭雪山' },
+      { id: 10, name: '川剧艺术中心' },
     ]
   }
 }
@@ -143,21 +147,39 @@ const getSpotName = (id: number) => {
 const initialRoutes = [
   { 
     id: 1, 
-    name: '经典一日游', 
+    name: '天府经典一日游', 
     tag: '热门',
-    desc: '包含迎客松、光明顶、飞来石等核心景点，适合时间紧凑的游客。',
+    desc: '一线串联宽窄巷子、人民公园与锦里古街，上午喝茶掏耳朵、傍晚看红灯夜市，半天读懂成都的生活底色。',
     duration: '6-8小时',
-    distance: '8.5',
-    path: [1, 2, 3, 5]
+    distance: '9.2',
+    path: [1, 6, 2]
   },
   { 
     id: 2, 
-    name: '西海大峡谷深度游', 
-    tag: '风景',
-    desc: '深入西海大峡谷，体验网红小火车，感受黄山的险峻与秀美。',
-    duration: '5-7小时',
-    distance: '6.2',
+    name: '熊猫与古迹深度线', 
+    tag: '亲子',
+    desc: '清晨赶在熊猫最活跃的时段进基地，午后转入武侯祠与杜甫草堂，一天之内看完自然与人文两条脉络。',
+    duration: '7-9小时',
+    distance: '12.6',
     path: [5, 3, 4]
+  },
+  { 
+    id: 3, 
+    name: '世界遗产双遗游', 
+    tag: '风光',
+    desc: '都江堰看两千年水利智慧，青城山登道家幽静山林，两处世界遗产同日打卡，适合体力较好的游客。',
+    duration: '全天',
+    distance: '58.0',
+    path: [7, 8]
+  },
+  { 
+    id: 4, 
+    name: '夜色与川剧之旅', 
+    tag: '休闲',
+    desc: '傍晚从人民公园出发，锦里看灯、川剧中心看变脸吐火，以一场两小时的演出收尾，夜间动线不赶路。',
+    duration: '4-5小时',
+    distance: '6.4',
+    path: [6, 2, 10]
   }
 ]
 

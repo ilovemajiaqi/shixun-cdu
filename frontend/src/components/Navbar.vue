@@ -7,7 +7,7 @@
     class="px-4"
   >
     <el-menu-item index="/">
-      <div class="text-xl font-bold text-mountain-green">黄山旅游</div>
+      <div class="text-xl font-bold text-mountain-green">成都旅游</div>
     </el-menu-item>
     <div class="flex-grow" />
     <el-menu-item index="/">首页</el-menu-item>

@@ -27,8 +27,8 @@
       <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
         <div>
           <p class="text-sm text-gray-500 mb-1">景点总数</p>
-          <h3 class="text-2xl font-bold text-gray-800">18</h3>
-          <p class="text-xs text-gray-400 mt-1">覆盖4大景区</p>
+          <h3 class="text-2xl font-bold text-gray-800">10</h3>
+          <p class="text-xs text-gray-400 mt-1">覆盖4大分区</p>
         </div>
         <div class="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center text-orange-500">
           <el-icon class="text-xl"><Location /></el-icon>
@@ -80,11 +80,11 @@ import * as echarts from 'echarts'
 const chartRef = ref<HTMLElement | null>(null)
 
 const hotSpots = [
-  { name: '迎客松', percent: 85 },
-  { name: '西海大峡谷', percent: 72 },
-  { name: '光明顶', percent: 64 },
-  { name: '莲花峰', percent: 58 },
-  { name: '宏村', percent: 45 },
+  { name: '成都大熊猫繁育研究基地', percent: 88 },
+  { name: '宽窄巷子', percent: 76 },
+  { name: '锦里古街', percent: 69 },
+  { name: '都江堰', percent: 61 },
+  { name: '青城山', percent: 54 },
 ]
 
 onMounted(() => {

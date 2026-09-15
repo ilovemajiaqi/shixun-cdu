@@ -6,10 +6,10 @@
         <el-input v-model="searchQuery" placeholder="搜索景点名称" :prefix-icon="Search" class="w-64" />
         <el-select v-model="filterRegion" placeholder="所有区域" class="w-40" clearable>
           <el-option label="所有区域" value="" />
-          <el-option label="玉屏景区" value="玉屏景区" />
-          <el-option label="北海景区" value="北海景区" />
-          <el-option label="西海景区" value="西海景区" />
-          <el-option label="天海景区" value="天海景区" />
+          <el-option label="市区经典" value="市区经典" />
+          <el-option label="熊猫生态" value="熊猫生态" />
+          <el-option label="世界遗产" value="世界遗产" />
+          <el-option label="近郊山水" value="近郊山水" />
         </el-select>
         <el-button type="warning" plain @click="resetData">
           <el-icon class="mr-1"><Refresh /></el-icon> 重置数据
@@ -65,11 +65,10 @@
         </el-form-item>
         <el-form-item label="所属区域">
           <el-select v-model="form.region" class="w-full">
-            <el-option label="玉屏景区" value="玉屏景区" />
-            <el-option label="北海景区" value="北海景区" />
-            <el-option label="西海景区" value="西海景区" />
-            <el-option label="天海景区" value="天海景区" />
-            <el-option label="周边景点" value="周边景点" />
+            <el-option label="市区经典" value="市区经典" />
+            <el-option label="熊猫生态" value="熊猫生态" />
+            <el-option label="世界遗产" value="世界遗产" />
+            <el-option label="近郊山水" value="近郊山水" />
           </el-select>
         </el-form-item>
         <el-form-item label="门票价格">
@@ -113,53 +112,103 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 const initialAttractions = [
   {
     id: 1,
-    name: '迎客松',
-    region: '玉屏景区',
-    description: '位于玉屏楼左侧，倚青狮石破石而生，高10米，胸径0.64米，树龄至少已有800年，一侧枝桠伸出，如人伸出一只臂膀欢迎远道而来的客人，另一只手优雅地斜插在裤兜里，雍容大度，姿态优美。',
-    price: 190,
-    openTime: '06:00 - 17:30',
-    status: 1,
-    mainImage: 'https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: 2,
-    name: '西海大峡谷',
-    region: '西海景区',
-    description: '因谷中有白云溪，又称“白云谷”。此谷是由近旁的石柱峰、石床峰，右前方的薄刀峰、飞来石，对面的排云亭、丹霞峰、松林峰和左前方的九龙峰、云外峰等奇峰怪石所围成的空间。',
-    price: 0,
-    openTime: '08:00 - 16:30',
-    status: 1,
-    mainImage: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: 3,
-    name: '光明顶',
-    region: '天海景区',
-    description: '黄山第二高峰，海拔1860米。这里高旷开阔，日光照射久长，故名。顶上平坦而高旷，可观东海奇景、西海群峰，炼丹、天都、莲花、玉屏、鳌鱼诸峰尽收眼底。',
+    name: '宽窄巷子',
+    region: '市区经典',
+    description: '由宽巷子、窄巷子、井巷子三条平行老街组成，是成都遗留下来的较成规模的清朝古街道。青砖黛瓦、门头匾额保存完好，如今聚合成茶馆、川剧变脸小剧场、手作市集与川味小吃摊，闲坐一下午便是最地道的成都节奏。',
     price: 0,
     openTime: '全天开放',
     status: 1,
-    mainImage: 'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+    mainImage: '/images/chengdu/kuanzhai.jpg',
+  },
+  {
+    id: 2,
+    name: '锦里古街',
+    region: '市区经典',
+    description: '紧邻武侯祠的仿古商业街，以三国文化与成都民俗为主题。夜幕降临时数百盏红灯次第亮起，皮影戏、糖画、三大炮与张飞牛肉的摊子沿街铺开，被称为“成都版清明上河图”。',
+    price: 0,
+    openTime: '全天开放（夜间灯光最佳）',
+    status: 1,
+    mainImage: '/images/chengdu/jinli.jpg',
+  },
+  {
+    id: 3,
+    name: '武侯祠',
+    region: '市区经典',
+    description: '全国影响最大的三国遗迹博物馆，纪念诸葛亮与蜀汉群臣，由惠陵、汉昭烈庙、武侯祠三部分组成。红墙夹道与翠竹相映，是成都最具人文厚度的一处封地。',
+    price: 50,
+    openTime: '08:00 - 18:00',
+    status: 1,
+    mainImage: '/images/chengdu/wuhouci.jpg',
   },
   {
     id: 4,
-    name: '宏村',
-    region: '周边景点',
-    description: '宏村有“画里乡村”之称，截至2014年，全镇完好保存明清民居140余幢，主要景点有：南湖春晓，书院诵读，月沼风荷，牛肠水圳，双溪映碧，亭前古树，雷岗夕照等。',
-    price: 104,
-    openTime: '07:30 - 17:30',
+    name: '杜甫草堂',
+    region: '市区经典',
+    description: '唐代诗人杜甫流寓成都时的故居，在此写下《茅屋为秋风所破歌》等名篇。园内梅竹成林、水榭回廊交错，是闹市中少见的一处清幽园林。',
+    price: 50,
+    openTime: '08:00 - 18:00',
     status: 1,
-    mainImage: 'https://images.unsplash.com/photo-1599571234909-29ed5d1321d6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+    mainImage: '/images/chengdu/dufu.jpg',
   },
   {
     id: 5,
-    name: '莲花峰',
-    region: '玉屏景区',
-    description: '黄山最高峰，海拔1864.8米。峻峭高耸，气势雄伟。因主峰突兀，小峰簇拥，俨若新莲初开，仰天怒放，故名“莲花峰”。',
-    price: 0,
-    openTime: '07:00 - 16:00',
+    name: '成都大熊猫繁育研究基地',
+    region: '熊猫生态',
+    description: '世界最大的大熊猫迁地保护与繁育基地，园区模拟野生栖息环境，竹林掩映、溪流穿行。清晨是熊猫最活跃的时段，可近距离观察到进食、攀爬与幼崽育幼场景。',
+    price: 55,
+    openTime: '07:30 - 18:00',
     status: 1,
-    mainImage: 'https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+    mainImage: '/images/chengdu/panda-base.jpg',
+  },
+  {
+    id: 6,
+    name: '人民公园',
+    region: '市区经典',
+    description: '成都最老牌的市民公园，鹤鸣茶社的竹椅盖碗茶已延续百年。掏耳朵的师傅、围坐打牌的老人、湖边划船的家庭，共同构成成都慢生活最生动的切面。',
+    price: 0,
+    openTime: '06:00 - 22:00',
+    status: 1,
+    mainImage: '/images/chengdu/renmin-park.jpg',
+  },
+  {
+    id: 7,
+    name: '都江堰',
+    region: '世界遗产',
+    description: '始建于战国时期、由李冰主持修建的无坝引水工程，两千余年来仍在灌溉成都平原，是世界水利史上的奇迹。鱼嘴分水、飞沙堰泄洪、宝瓶口引水，三处主体至今清晰可辨。',
+    price: 80,
+    openTime: '08:00 - 18:00',
+    status: 1,
+    mainImage: '/images/chengdu/dujiangyan.jpg',
+  },
+  {
+    id: 8,
+    name: '青城山',
+    region: '世界遗产',
+    description: '中国道教发源地之一，素有“青城天下幽”之称。前山宫观林立、林木蔽日，后山溪瀑纵横、栈道悬空。拾级而上，苔痕石阶与道家清音相伴，是避暑养心的绝佳去处。',
+    price: 80,
+    openTime: '08:00 - 17:30',
+    status: 1,
+    mainImage: '/images/chengdu/qingcheng.jpg',
+  },
+  {
+    id: 9,
+    name: '西岭雪山',
+    region: '近郊山水',
+    description: '因杜甫“窗含西岭千秋雪”而得名的近郊雪山，海拔 5364 米，是成都市区可见的最高峰。冬季为西南地区规模最大的滑雪场，夏季草甸与云海同样开阔壮丽。',
+    price: 120,
+    openTime: '09:00 - 17:00',
+    status: 1,
+    mainImage: '/images/chengdu/xiling.jpg',
+  },
+  {
+    id: 10,
+    name: '川剧艺术中心',
+    region: '市区经典',
+    description: '集中呈现川剧精髓的专业剧场，以变脸、吐火、滚灯、手影戏为主打。演出前可体验勾脸谱、试戏服，台上锣鼓与锣腔一响，蜀地数百年的声腔记忆扑面而来。',
+    price: 180,
+    openTime: '14:00 - 21:30',
+    status: 1,
+    mainImage: '/images/chengdu/chuanju.jpg',
   },
 ]
 
@@ -249,7 +298,7 @@ const openDialog = (type: 'add' | 'edit', row?: any) => {
   if (type === 'edit' && row) {
     form.value = { ...row }
   } else {
-    form.value = { status: 1, price: 0, region: '玉屏景区' }
+    form.value = { status: 1, price: 0, region: '市区经典' }
   }
   dialogVisible.value = true
 }
