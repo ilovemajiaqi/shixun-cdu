@@ -149,57 +149,37 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted } from 'vue'
+import { ref, computed, reactive, onMounted, onUnmounted } from 'vue'
 import { Search, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox, type UploadProps } from 'element-plus'
+import { useUserStore } from '@/stores/user'
 
-// --- Data Management ---
-const users = ref<any[]>([])
+// 注册用户数据由 userStore 统一管理（含种子数据补齐逻辑）
+const userStore = useUserStore()
 const STORAGE_KEY = 'registered_users'
 
+const users = computed(() => userStore.registeredUsers)
+
 const loadUsers = () => {
-  const stored = localStorage.getItem(STORAGE_KEY)
-  let data = stored ? JSON.parse(stored) : []
-  
-  // Seed with mock data if empty or missing admin
-  const mockUsers = [
-    { id: 1001, username: 'traveler01', email: 'user1@example.com', role: 'user', status: 'active', registerDate: '2025-05-12', avatar: '', password: 'password' },
-    { id: 1002, username: 'hiker_pro', email: 'hiker@example.com', role: 'user', status: 'banned', registerDate: '2025-06-01', avatar: '', password: 'password' },
-    { id: 1003, username: 'admin', email: 'admin@chengdu.com', role: 'admin', status: 'active', registerDate: '2025-01-01', avatar: '', password: 'admin' },
-  ]
-
-  // Ensure mock users exist
-  mockUsers.forEach(mock => {
-    if (!data.find((u: any) => u.username === mock.username)) {
-      data.push(mock)
-    }
-  })
-
-  // Ensure all users have required fields
-  data = data.map((u: any) => ({
-    ...u,
-    id: u.id || Date.now() + Math.random(),
-    role: u.role || 'user',
-    status: u.status || 'active',
-    registerDate: u.registerDate || new Date().toLocaleDateString(),
-    avatar: u.avatar || ''
-  }))
-
-  users.value = data
-  saveUsers(false) // Save init data but don't reload
+  userStore.loadRegisteredUsers(true)
 }
 
-const saveUsers = (reload = true) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(users.value))
-  if (reload) loadUsers()
+const saveUsers = () => {
+  userStore.persistRegisteredUsers()
+}
+
+// 跨标签页同步仍然需要监听原生 storage 事件（store 无法感知其他标签页的写入）
+const onStorage = (e: StorageEvent) => {
+  if (e.key === STORAGE_KEY) userStore.loadRegisteredUsers(true)
 }
 
 onMounted(() => {
   loadUsers()
-  // Sync with other tabs
-  window.addEventListener('storage', (e) => {
-    if (e.key === STORAGE_KEY) loadUsers()
-  })
+  window.addEventListener('storage', onStorage)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('storage', onStorage)
 })
 
 // --- Filtering ---
@@ -233,7 +213,7 @@ const handleDelete = (row: any) => {
   ElMessageBox.confirm(`确定要删除用户 ${row.username} 吗？此操作不可恢复。`, '警告', {
     type: 'error'
   }).then(() => {
-    users.value = users.value.filter(u => u.username !== row.username)
+    userStore.registeredUsers = users.value.filter(u => u.username !== row.username)
     saveUsers()
     ElMessage.success({ message: '用户已删除', duration: 1500 })
   })
@@ -295,8 +275,8 @@ const saveUser = () => {
     // Update existing
     const idx = users.value.findIndex(u => u.username === editingUser.value.username)
     if (idx !== -1) {
-      users.value[idx] = {
-        ...users.value[idx],
+      userStore.registeredUsers[idx] = {
+        ...userStore.registeredUsers[idx],
         email: form.email,
         role: form.role,
         status: form.status,
@@ -308,9 +288,10 @@ const saveUser = () => {
     // Create new
     if (users.value.find(u => u.username === form.username)) {
       ElMessage.error({ message: '用户名已存在', duration: 1500 })
+      savingUser.value = false
       return
     }
-    users.value.unshift({
+    userStore.registeredUsers.unshift({
       id: Date.now(),
       username: form.username,
       email: form.email,
@@ -321,7 +302,7 @@ const saveUser = () => {
       avatar: form.avatar
     })
   }
-  
+
   saveUsers()
   dialogVisible.value = false
   ElMessage.success({ message: editingUser.value ? '更新成功' : '创建成功', duration: 1500 })

@@ -54,8 +54,10 @@ gsbll7/
 │   │   ├── layouts/              # PublicLayout / MainLayout / AdminLayout
 │   │   ├── views/                # 页面（用户端）
 │   │   │   └── admin/            # 页面（管理端）
+│   │   ├── stores/               # Pinia 状态管理（attraction / route / order / user）
 │   │   ├── router/               # 路由与守卫
-│   │   └── api/                  # Axios 封装
+│   │   ├── utils/                # api.ts（Axios）、storage.ts（localStorage 读写）
+│   │   └── main.ts               # 应用入口（注册 Pinia）
 │   ├── public/
 │   │   └── images/chengdu/       # 成都景点图片资源（27 张）
 │   ├── index.html                # 站点入口（浏览器标签标题）
@@ -176,25 +178,48 @@ mvn spring-boot:run
 
 ---
 
-## 八、数据存储说明
+## 八、状态管理（Pinia）
 
-前端页面数据**主要走浏览器 localStorage**，便于无后端时独立演示：
+项目使用 **Pinia** 作为唯一的前端数据层。所有业务数据（景点、路线、订单、用户）都收拢在 `src/stores/` 下的 store 中，
+组件只通过 store 读写，**不再直接操作 localStorage**，也不再依赖自定义事件做跨组件同步。
 
-| 键名 | 用途 |
-| :--- | :--- |
-| `attractions_data` | 景点数据 |
-| `routes_data` | 路线数据 |
-| `all_orders` | 全部订单 |
-| `user_favorites` | 用户收藏 |
-| `user_routes` | 用户自定义路线 |
-| `user` / `registered_users` | 登录态与注册用户 |
-| `admin_token` | 管理员登录态 |
+### Store 一览
 
-> 后端 API 已实现，但前端大部分模块默认读取 localStorage。清空浏览器存储即可恢复初始数据。
+| Store | 文件 | 职责 | 持久化键 |
+| :--- | :--- | :--- | :--- |
+| `useAttractionStore` | `stores/attraction.ts` | 景点列表、上下架、地图点位（含坐标）、默认数据 | `attractions_data` |
+| `useRouteStore` | `stores/route.ts` | 推荐路线维护、自定义路线编辑与保存 | `routes_data`、`user_routes` |
+| `useOrderStore` | `stores/order.ts` | 下单、状态流转、成交额/今日订单统计 | `all_orders` |
+| `useUserStore` | `stores/user.ts` | 登录态、管理员登录态、注册用户、收藏 | `user`、`admin_token`、`admin_user`、`registered_users`、`user_favorites` |
 
-**注意**：景点初始数据硬编码在两处 —— `views/AttractionsView.vue` 的 `attractions`
-与 `views/admin/AttractionManagement.vue` 的 `initialAttractions`。
-如需新增或修改景点，**两处必须同步**，否则后台「重置数据」会把内容回滚成旧值。
+`stores/types.ts` 集中定义 `Attraction` / `Route` / `Order` / `UserProfile` 等类型，`stores/index.ts` 作为统一出口。
+
+### 设计要点
+
+1. **单一数据源**：默认景点数据只保留在 `stores/attraction.ts` 的 `DEFAULT_ATTRACTIONS`。
+   前台 `AttractionsView` 与后台 `AttractionManagement` 共用同一份数据，
+   此前的「两处硬编码需手动同步」问题已消除。
+2. **持久化收口**：`utils/storage.ts` 只负责序列化与容错（`getStorage` / `setStorage` / `removeStorage`），
+   业务语义全部在 store 内，localStorage 调用仅存在于该文件与 store 层。
+3. **响应式替代事件总线**：原先 `window.dispatchEvent(new Event('user-updated'))`
+   与 `orders-updated` 的桥接写法已删除，组件读 store 即自动同步。
+4. **跨标签页同步**：浏览器原生 `storage` 事件仍需监听（store 无法感知其他标签页的写入），
+   目前仅在 `UserManagement.vue` 保留一处，用于多标签页下的用户列表刷新。
+
+### 数据存储键
+
+| 键名 | 用途 | 归属 store |
+| :--- | :--- | :--- |
+| `attractions_data` | 景点数据 | attraction |
+| `routes_data` | 推荐路线 | route |
+| `user_routes` | 用户自定义路线 | route |
+| `all_orders` | 全部订单 | order |
+| `user` | 登录用户 | user |
+| `registered_users` | 注册用户列表 | user |
+| `user_favorites` | 用户收藏 | user |
+| `admin_token` / `admin_user` | 管理员登录态 | user |
+
+> 后端 API 已实现，但前端默认以 store + localStorage 运行，便于无后端时独立演示。清空浏览器存储即可恢复初始数据。
 
 ---
 
@@ -205,11 +230,12 @@ mvn spring-boot:run
 1. `frontend/index.html` —— `<title>`、favicon、`<meta name="description">`
 2. `frontend/public/favicon.svg` —— 站点图标
 3. `frontend/src/components/Navbar.vue`、`layouts/*.vue` —— 站名、口号、版权
-4. `frontend/src/views/**` —— 页面文案与硬编码示例数据
-5. `docker-compose.yml` —— 容器名、数据库名
-6. `backend/src/main/resources/application.yml` —— JDBC 连接串
-7. `init.sql` —— 库名与种子数据
-8. `frontend/package.json` —— `name`
+4. `frontend/src/views/**` —— 页面文案
+5. `frontend/src/stores/attraction.ts` / `stores/route.ts` —— 默认景点与路线数据
+6. `docker-compose.yml` —— 容器名、数据库名
+7. `backend/src/main/resources/application.yml` —— JDBC 连接串
+8. `init.sql` —— 库名与种子数据
+9. `frontend/package.json` —— `name`
 
 ---
 
@@ -218,7 +244,8 @@ mvn spring-boot:run
 - 前端使用 **TypeScript**，组件统一 `<script setup lang="ts">`
 - 样式优先使用 **Tailwind 原子类**，复杂组件用 Element Plus
 - 路由采用**懒加载**：`component: () => import('...')`
-- 管理端路由由 `router.beforeEach` 校验 `admin_token`，用户端校验 `user`
+- 状态统一走 **Pinia store**，禁止在组件内直接调用 `localStorage`
+- 管理端路由由 `router.beforeEach` 校验 `admin_token`，用户端校验登录态（均通过 `useUserStore`）
 
 ---
 

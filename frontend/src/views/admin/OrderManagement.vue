@@ -87,12 +87,17 @@
 import { ref, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
+import { useOrderStore } from '@/stores/order'
+import type { Order } from '@/stores/types'
 
-const bookings = ref([
-  { orderId: 'ORD-2025070101', user: 'traveler01', spot: '成都大熊猫繁育研究基地', date: '2025-07-05', quantity: 2, price: 55, total: 110, status: 'paid' },
-  { orderId: 'ORD-2025070102', user: 'hiker_pro', spot: '都江堰', date: '2025-07-06', quantity: 1, price: 80, total: 80, status: 'pending' },
-  { orderId: 'ORD-2025070103', user: 'traveler01', spot: '川剧艺术中心', date: '2025-07-05', quantity: 3, price: 180, total: 540, status: 'cancelled' },
-])
+// 订单统一由 orderStore 管理：前台下单、后台改状态都落在同一份数据上
+const orderStore = useOrderStore()
+orderStore.load()
+
+const bookings = computed(() => orderStore.list)
+// 模板里的状态提取改为直接复用 store 的映射方法
+const getStatusType = (status: string) => orderStore.statusTag(status)
+const getStatusText = (status: string) => orderStore.statusText(status)
 
 const bookingStatusFilter = ref('')
 const searchQuery = ref('')
@@ -101,27 +106,6 @@ const dialogVisible = ref(false)
 const dialogType = ref<'add' | 'edit'>('add')
 const submitting = ref(false)
 const form = ref<any>({})
-
-const loadOrders = () => {
-  const stored = localStorage.getItem('all_orders')
-  if (stored) {
-    bookings.value = JSON.parse(stored)
-  } else {
-    // Init Mocks
-    bookings.value = [
-      { orderId: 'ORD-2025070101', user: 'traveler01', spot: '成都大熊猫繁育研究基地', date: '2025-07-05', quantity: 2, price: 55, total: 110, status: 'paid' },
-      { orderId: 'ORD-2025070102', user: 'hiker_pro', spot: '都江堰', date: '2025-07-06', quantity: 1, price: 80, total: 80, status: 'pending' },
-    ]
-    saveOrders()
-  }
-}
-
-const saveOrders = () => {
-  localStorage.setItem('all_orders', JSON.stringify(bookings.value))
-  window.dispatchEvent(new Event('orders-updated'))
-}
-
-loadOrders()
 
 const filteredBookings = computed(() => {
   return bookings.value.filter(b => {
@@ -132,22 +116,11 @@ const filteredBookings = computed(() => {
   })
 })
 
-const getStatusType = (status: string) => {
-  const map: Record<string, string> = { paid: 'success', pending: 'warning', cancelled: 'info' }
-  return map[status] || 'info'
-}
-
-const getStatusText = (status: string) => {
-  const map: Record<string, string> = { paid: '已支付', pending: '待支付', cancelled: '已取消' }
-  return map[status] || status
-}
-
 const cancelOrder = (row: any) => {
   ElMessageBox.confirm(`确定要取消订单 ${row.orderId} 吗？`, '警告', {
     type: 'warning'
   }).then(() => {
-    row.status = 'cancelled'
-    saveOrders()
+    orderStore.setStatus(row.orderId, 'cancelled')
     ElMessage.success({ message: '订单已取消', duration: 1500 })
   })
 }
@@ -156,8 +129,7 @@ const confirmPay = (row: any) => {
   ElMessageBox.confirm(`确认订单 ${row.orderId} 已支付？`, '提示', {
     type: 'success'
   }).then(() => {
-    row.status = 'paid'
-    saveOrders()
+    orderStore.setStatus(row.orderId, 'paid')
     ElMessage.success({ message: '订单状态更新为已支付', duration: 1500 })
   })
 }
@@ -180,26 +152,24 @@ const handleSubmit = () => {
     submitting.value = false
     return
   }
-  form.value.total = Math.round(form.value.quantity * form.value.price * 100) / 100
+  const payload: Order = {
+    ...form.value,
+    total: Math.round(form.value.quantity * form.value.price * 100) / 100,
+  }
   if (dialogType.value === 'add') {
-    bookings.value.unshift({ ...form.value })
+    orderStore.upsertOrder(payload)
     ElMessage.success({ message: '订单创建成功', duration: 1500 })
   } else {
-    const idx = bookings.value.findIndex(b => b.orderId === form.value.orderId)
-    if (idx !== -1) {
-      bookings.value[idx] = { ...form.value }
-      ElMessage.success({ message: '订单更新成功', duration: 1500 })
-    }
+    orderStore.updateOrder(payload.orderId, payload)
+    ElMessage.success({ message: '订单更新成功', duration: 1500 })
   }
-  saveOrders()
   dialogVisible.value = false
   submitting.value = false
 }
 
 const deleteOrder = (row: any) => {
   ElMessageBox.confirm(`确定删除订单 ${row.orderId} 吗？`, '警告', { type: 'warning' }).then(() => {
-    bookings.value = bookings.value.filter(b => b.orderId !== row.orderId)
-    saveOrders()
+    orderStore.removeOrder(row.orderId)
     ElMessage.success({ message: '订单已删除', duration: 1500 })
   })
 }

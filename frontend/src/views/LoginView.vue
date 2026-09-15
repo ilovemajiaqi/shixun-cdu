@@ -75,8 +75,10 @@ import { User, Lock } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import api from '@/utils/api'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
 
@@ -102,15 +104,15 @@ const handleLogin = async (formEl: FormInstance | undefined) => {
         })
         
         const user = response.data
-        
-        localStorage.setItem('user', JSON.stringify({
+
+        userStore.setProfile({
           username: user.username,
           email: user.email,
           role: user.role,
           token: 'mock-token',
           avatar: ''
-        }))
-        
+        })
+
         ElMessage.success({ message: '登录成功，欢迎回来！', duration: 1500 })
         router.push('/')
       } catch (error: any) {

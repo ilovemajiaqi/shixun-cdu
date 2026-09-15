@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -87,17 +88,18 @@ const router = createRouter({
 })
 
 router.beforeEach((to, _from, next) => {
-  const user = localStorage.getItem('user')
-  
+  // 守卫里必须显式调用 useUserStore()：pinia 实例在 main.ts 才安装，
+  // 此处是运行时求值，可以拿到已激活的实例。
+  const userStore = useUserStore()
+
   if (to.matched.some(record => record.meta.requiresAdmin)) {
-    const adminToken = localStorage.getItem('admin_token')
-    if (!adminToken) {
+    if (!userStore.isAdmin) {
       next('/admin/login')
     } else {
       next()
     }
   } else if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!user) {
+    if (!userStore.isLoggedIn) {
       next({
         path: '/login',
         query: { redirect: to.fullPath }

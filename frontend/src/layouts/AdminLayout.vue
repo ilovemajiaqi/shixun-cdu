@@ -88,9 +88,11 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { DataBoard, Location, User, List, Monitor, Management, Bell, Guide } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
 const activeMenu = computed(() => route.path)
 
@@ -111,8 +113,7 @@ const handleLogout = () => {
     cancelButtonText: '取消',
     type: 'warning',
   }).then(() => {
-    localStorage.removeItem('admin_token')
-    localStorage.removeItem('admin_user')
+    userStore.adminLogout()
     ElMessage.success({ message: '已安全退出', duration: 1500 })
     router.push('/admin/login')
   })

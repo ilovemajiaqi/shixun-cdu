@@ -28,13 +28,13 @@
       </div>
 
       <div class="flex items-center gap-4">
-        <template v-if="username">
+        <template v-if="userStore.isLoggedIn">
            <el-dropdown trigger="click" @command="handleCommand">
             <span class="flex items-center cursor-pointer" :class="(isScrolled || route.path !== '/') ? 'text-gray-700' : 'text-white'">
-              <el-avatar :size="32" :src="user.avatar || undefined" class="mr-2 bg-gradient-to-r from-green-400 to-blue-500 text-white border-2 border-white/50">
-                {{ !user.avatar ? username.charAt(0).toUpperCase() : '' }}
+              <el-avatar :size="32" :src="userStore.profile.avatar || undefined" class="mr-2 bg-gradient-to-r from-green-400 to-blue-500 text-white border-2 border-white/50">
+                {{ !userStore.profile.avatar ? userStore.username.charAt(0).toUpperCase() : '' }}
               </el-avatar>
-              <span class="hidden sm:inline">{{ username }}</span>
+              <span class="hidden sm:inline">{{ userStore.username }}</span>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
@@ -93,25 +93,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Promotion } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
 const router = useRouter()
 const isScrolled = ref(false)
 
-const user = ref<any>({})
-const username = computed(() => user.value.username || '')
-
-const loadUser = () => {
-  try {
-    user.value = JSON.parse(localStorage.getItem('user') || '{}')
-  } catch (e) {
-    user.value = {}
-  }
-}
+// 用户状态由 store 统一维护，组件只读不写，天然保持同步。
+const userStore = useUserStore()
 
 const navItems = [
   { name: '首页', path: '/' },
@@ -128,9 +121,7 @@ const handleScroll = () => {
 
 const handleCommand = (command: string) => {
   if (command === 'logout') {
-    localStorage.removeItem('user')
-    localStorage.removeItem('token')
-    user.value = {}
+    userStore.logout()
     ElMessage.success({ message: '已退出登录', duration: 1500 })
     router.push('/login')
   } else if (command === 'user') {
@@ -139,14 +130,11 @@ const handleCommand = (command: string) => {
 }
 
 onMounted(() => {
-  loadUser()
   window.addEventListener('scroll', handleScroll)
-  window.addEventListener('user-updated', loadUser)
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
-  window.removeEventListener('user-updated', loadUser)
 })
 </script>
 

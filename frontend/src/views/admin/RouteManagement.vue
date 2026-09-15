@@ -103,116 +103,37 @@
 import { ref, computed } from 'vue'
 import { Plus, Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useRouteStore } from '@/stores/route'
+import { useAttractionStore } from '@/stores/attraction'
 
-// Define Spot Interface
-interface Spot {
-  id: number;
-  name: string;
-}
+// 路线与可选景点都来自 store，不再各自读 localStorage
+const routeStore = useRouteStore()
+const attractionStore = useAttractionStore()
+routeStore.load()
+attractionStore.load()
 
-// Available Spots (Synced with Attractions Data)
-const availableSpots = ref<Spot[]>([])
+const routes = computed(() => routeStore.recommended)
 
-const loadAvailableSpots = () => {
-  const stored = localStorage.getItem('attractions_data')
-  if (stored) {
-    const attractions = JSON.parse(stored)
-    availableSpots.value = attractions.map((a: any) => ({
-      id: a.id,
-      name: a.name
-    }))
-  } else {
-    // Fallback defaults if no attraction data exists
-    availableSpots.value = [
-      { id: 1, name: '宽窄巷子' },
-      { id: 2, name: '锦里古街' },
-      { id: 3, name: '武侯祠' },
-      { id: 4, name: '杜甫草堂' },
-      { id: 5, name: '熊猫基地' },
-      { id: 6, name: '人民公园' },
-      { id: 7, name: '都江堰' },
-      { id: 8, name: '青城山' },
-      { id: 9, name: '西岭雪山' },
-      { id: 10, name: '川剧艺术中心' },
-    ]
-  }
-}
+// 可选景点 = 景点列表（id + name 即可满足下拉需要）
+const availableSpots = computed(() =>
+  attractionStore.list.map(a => ({ id: a.id, name: a.name }))
+)
 
 const getSpotName = (id: number) => {
   const spot = availableSpots.value.find(s => s.id === id)
   return spot ? spot.name : `未知景点(${id})`
 }
 
-// Mock Data (Initial Sync with Frontend)
-const initialRoutes = [
-  { 
-    id: 1, 
-    name: '天府经典一日游', 
-    tag: '热门',
-    desc: '一线串联宽窄巷子、人民公园与锦里古街，上午喝茶掏耳朵、傍晚看红灯夜市，半天读懂成都的生活底色。',
-    duration: '6-8小时',
-    distance: '9.2',
-    path: [1, 6, 2]
-  },
-  { 
-    id: 2, 
-    name: '熊猫与古迹深度线', 
-    tag: '亲子',
-    desc: '清晨赶在熊猫最活跃的时段进基地，午后转入武侯祠与杜甫草堂，一天之内看完自然与人文两条脉络。',
-    duration: '7-9小时',
-    distance: '12.6',
-    path: [5, 3, 4]
-  },
-  { 
-    id: 3, 
-    name: '世界遗产双遗游', 
-    tag: '风光',
-    desc: '都江堰看两千年水利智慧，青城山登道家幽静山林，两处世界遗产同日打卡，适合体力较好的游客。',
-    duration: '全天',
-    distance: '58.0',
-    path: [7, 8]
-  },
-  { 
-    id: 4, 
-    name: '夜色与川剧之旅', 
-    tag: '休闲',
-    desc: '傍晚从人民公园出发，锦里看灯、川剧中心看变脸吐火，以一场两小时的演出收尾，夜间动线不赶路。',
-    duration: '4-5小时',
-    distance: '6.4',
-    path: [6, 2, 10]
-  }
-]
-
-const routes = ref<any[]>([])
 const loading = ref(false)
 const searchQuery = ref('')
 const dialogVisible = ref(false)
 const dialogType = ref<'add' | 'edit'>('add')
 const form = ref<any>({})
 
-// Load from localStorage
-const loadRoutes = () => {
-  const stored = localStorage.getItem('routes_data')
-  if (stored) {
-    routes.value = JSON.parse(stored)
-  } else {
-    routes.value = JSON.parse(JSON.stringify(initialRoutes))
-    saveRoutes()
-  }
-}
-
-// Save to localStorage
-const saveRoutes = () => {
-  localStorage.setItem('routes_data', JSON.stringify(routes.value))
-}
-
-loadRoutes()
-loadAvailableSpots()
-
 const filteredRoutes = computed(() => {
   if (!searchQuery.value) return routes.value
-  return routes.value.filter(route => 
-    route.name.includes(searchQuery.value) || 
+  return routes.value.filter(route =>
+    route.name.includes(searchQuery.value) ||
     route.desc.includes(searchQuery.value)
   )
 })
@@ -241,21 +162,13 @@ const handleSubmit = () => {
   }
 
   if (dialogType.value === 'add') {
-    const newId = routes.value.length > 0 ? Math.max(...routes.value.map(r => r.id)) + 1 : 1
-    routes.value.push({
-      ...form.value,
-      id: newId
-    })
+    routeStore.addRoute(form.value)
     ElMessage.success({ message: '添加成功', duration: 1500 })
   } else {
-    const index = routes.value.findIndex(r => r.id === form.value.id)
-    if (index !== -1) {
-      routes.value[index] = { ...form.value }
-      ElMessage.success({ message: '更新成功', duration: 1500 })
-    }
+    routeStore.updateRoute(form.value.id, form.value)
+    ElMessage.success({ message: '更新成功', duration: 1500 })
   }
-  
-  saveRoutes()
+
   dialogVisible.value = false
 }
 
@@ -269,8 +182,7 @@ const handleDelete = (row: any) => {
       type: 'warning',
     }
   ).then(() => {
-    routes.value = routes.value.filter(r => r.id !== row.id)
-    saveRoutes()
+    routeStore.removeRoute(row.id)
     ElMessage.success({ message: '删除成功', duration: 1500 })
   })
 }

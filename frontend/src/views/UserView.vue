@@ -198,14 +198,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick, onActivated, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick, onActivated } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Edit, Calendar, Delete, User, List, Star, Guide } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox, type UploadProps } from 'element-plus'
-import { getStorage, safeJSONParse } from '@/utils/storage'
+import { useUserStore } from '@/stores/user'
+import { useOrderStore } from '@/stores/order'
+import { useRouteStore } from '@/stores/route'
 
 const route = useRoute()
 const router = useRouter()
+
+// 三个 store 覆盖本页全部数据：用户资料、收藏、订单、自定义路线
+const userStore = useUserStore()
+const orderStore = useOrderStore()
+const routeStore = useRouteStore()
 
 const tabs = [
   { label: '个人信息', value: 'info', icon: User },
@@ -218,7 +225,6 @@ const switchTab = (tab: string) => {
   router.push({ query: { ...route.query, tab } })
 }
 
-const user = ref<any>(getStorage('user', {}))
 const chartRef = ref<HTMLElement | null>(null)
 const isEditing = ref(false)
 const editForm = ref({
@@ -226,25 +232,18 @@ const editForm = ref({
   email: ''
 })
 
-const userAvatar = ref(user.value.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png')
+// 直接绑定 store 的 profile，避免本地副本与 store 不一致
+const user = computed(() => userStore.profile)
+const userAvatar = computed(() => userStore.profile.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png')
 const saving = ref(false)
 
 const handleAvatarChange: UploadProps['onChange'] = (uploadFile) => {
   if (uploadFile.raw) {
     const reader = new FileReader()
     reader.onload = (e) => {
-      userAvatar.value = e.target?.result as string
-      // Save to user object and localStorage
-      user.value.avatar = userAvatar.value
-      localStorage.setItem('user', JSON.stringify(user.value))
-      // Sync avatar to registered_users if the user exists
-      const registered = getStorage<any[]>('registered_users', [])
-      const idx = registered.findIndex((u: any) => u.username === user.value.username)
-      if (idx !== -1) {
-        registered[idx].avatar = userAvatar.value
-        localStorage.setItem('registered_users', JSON.stringify(registered))
-      }
-      window.dispatchEvent(new Event('user-updated'))
+      const avatar = e.target?.result as string
+      // updateProfile 内部会写存储并同步 registered_users
+      userStore.updateProfile({ avatar })
       ElMessage.success({ message: '头像上传成功', duration: 1500 })
     }
     reader.readAsDataURL(uploadFile.raw)
@@ -252,7 +251,7 @@ const handleAvatarChange: UploadProps['onChange'] = (uploadFile) => {
 }
 
 const startEdit = () => {
-  editForm.value = { ...user.value }
+  editForm.value = { username: user.value.username, email: user.value.email || '' }
   isEditing.value = true
 }
 
@@ -264,21 +263,7 @@ const saveProfile = () => {
     saving.value = false
     return
   }
-  user.value = { ...user.value, ...editForm.value }
-  localStorage.setItem('user', JSON.stringify(user.value))
-  // Sync profile changes to registered_users when present
-  const registered = getStorage<any[]>('registered_users', [])
-  const idx = registered.findIndex((u: any) => u.username === user.value.username)
-  if (idx !== -1) {
-    registered[idx] = { 
-      ...registered[idx], 
-      username: user.value.username, 
-      email: user.value.email, 
-      avatar: user.value.avatar || registered[idx].avatar || '' 
-    }
-    localStorage.setItem('registered_users', JSON.stringify(registered))
-  }
-  window.dispatchEvent(new Event('user-updated'))
+  userStore.updateProfile({ username: editForm.value.username, email: editForm.value.email })
   isEditing.value = false
   ElMessage.success({ message: '个人信息更新成功', duration: 1500 })
   saving.value = false
@@ -295,17 +280,8 @@ const cancelBooking = (row: any) => {
     }
   )
     .then(() => {
-      // Update local UI
-      row.status = '已取消'
-      
-      // Update localStorage (Unified 'all_orders')
-      const allOrders = getStorage<any[]>('all_orders', [])
-      const targetOrder = allOrders.find((o: any) => o.orderId === row.id)
-      if (targetOrder) {
-        targetOrder.status = 'cancelled'
-        localStorage.setItem('all_orders', JSON.stringify(allOrders))
-      }
-
+      // 状态改由 store 统一落盘，列表通过 computed 自动同步
+      orderStore.setStatus(row.id, 'cancelled')
       ElMessage.success({ message: '订单已取消', duration: 1500 })
     })
     .catch(() => {})
@@ -313,156 +289,100 @@ const cancelBooking = (row: any) => {
 
 const currentTab = computed(() => (route.query.tab as string) || 'info')
 
-// Bookings Data
-const bookings = ref([
-  { id: 101, date: '2026-05-01', spotName: '成都大熊猫繁育研究基地', count: 2, price: 110, status: '已支付' },
-  { id: 102, date: '2026-04-15', spotName: '都江堰', count: 1, price: 80, status: '已完成' },
-  { id: 103, date: '2026-06-10', spotName: '川剧艺术中心', count: 3, price: 540, status: '待支付' },
-])
+// 预订记录：由 store 的订单按当前用户过滤 + 映射为表格结构
+const bookings = computed(() =>
+  orderStore.byUser(userStore.username).map(o => ({
+    id: o.orderId,
+    date: o.date,
+    spotName: o.spot,
+    count: o.quantity,
+    price: o.total,
+    status: o.status === 'paid' ? '已支付' : (o.status === 'pending' ? '待支付' : '已取消')
+  }))
+)
 
-const loadBookings = () => {
-  const allOrders = getStorage<any[]>('all_orders', [])
-  const myOrders = allOrders.filter((o: any) => o.user === user.value.username)
-  
-  if (myOrders.length > 0) {
-    bookings.value = myOrders.map((o: any) => ({
-      id: o.orderId,
-      date: o.date,
-      spotName: o.spot,
-      count: o.quantity,
-      price: o.total,
-      status: o.status === 'paid' ? '已支付' : (o.status === 'pending' ? '待支付' : '已取消')
-    }))
-  } else {
-    bookings.value = []
+// 收藏列表直接来自 store
+const favorites = computed(() => userStore.favorites)
+
+const handleRowClick = (row: any) => {
+  ElMessage.info({ message: `查看订单详情: ${row.id}`, duration: 1500 })
+}
+
+const removeFavorite = (id: number) => {
+  userStore.removeFavorite(id)
+  ElMessage.success({ message: '已取消收藏', duration: 1500 })
+}
+
+// 自定义路线
+const userRoutes = computed(() => routeStore.saved)
+const openRoute = (r: any) => {
+  router.push({ path: '/routes', query: { load: r.id } })
+}
+const removeRoute = (id: number) => {
+  routeStore.removeSaved(id)
+  ElMessage.success({ message: '已删除路线', duration: 1500 })
+}
+
+// Chart Logic
+let chartInstance: any = null
+const initChart = async () => {
+  if (!chartRef.value || currentTab.value !== 'info') return
+  const echarts = await import('echarts')
+  chartInstance = echarts.init(chartRef.value)
+  const option = {
+    tooltip: { trigger: 'axis' },
+    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+    xAxis: { type: 'category', boundaryGap: false, data: ['1月', '2月', '3月', '4月', '5月', '6月'] },
+    yAxis: { type: 'value' },
+    series: [
+      {
+        name: '浏览热度',
+        type: 'line',
+        smooth: true,
+        lineStyle: { color: '#10B981', width: 3 },
+        areaStyle: {
+          color: new (echarts as any).graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(16, 185, 129, 0.5)' },
+            { offset: 1, color: 'rgba(16, 185, 129, 0.0)' }
+          ])
+        },
+        data: [15, 30, 45, 32, 60, 85]
+      }
+    ]
   }
+  chartInstance.setOption(option)
+}
+
+const getUserStatusType = (status: string) => {
+  const map: Record<string, string> = { '已支付': 'success', '待支付': 'warning', '已取消': 'info', '已完成': 'success' }
+  return map[status] || 'info'
 }
 
 onMounted(async () => {
-    loadBookings()
-    loadFavorites()
-    if (currentTab.value === 'routes') {
-      loadUserRoutes()
-    }
-    if (currentTab.value === 'info') {
-      await nextTick()
-      initChart()
-    }
-  })
-
-  const favorites = ref([
-    { id: 1, name: '宽窄巷子', desc: '清代古街，茶馆与市集交错。', image: '/images/chengdu/kuanzhai.jpg' },
-    { id: 2, name: '锦里古街', desc: '红灯夜市与川味小吃一条街。', image: '/images/chengdu/jinli.jpg' },
-  ])
-
-  const loadFavorites = () => {
-    const stored = localStorage.getItem('user_favorites')
-    if (stored) {
-      const userFavs = safeJSONParse<any[]>(stored, [])
-      if (userFavs.length > 0) {
-        favorites.value = userFavs
-      }
-    }
-  }
-
-  const handleRowClick = (row: any) => {
-    ElMessage.info({ message: `查看订单详情: ${row.id}`, duration: 1500 })
-  }
-
-  const removeFavorite = (id: number) => {
-    const stored = getStorage<any[]>('user_favorites', [])
-    const newStored = stored.filter((f: any) => f.id !== id)
-    localStorage.setItem('user_favorites', JSON.stringify(newStored))
-    favorites.value = favorites.value.filter(f => f.id !== id)
-    ElMessage.success({ message: '已取消收藏', duration: 1500 })
-  }
-
-  // User Routes
-  const userRoutes = ref<any[]>([])
-  const loadUserRoutes = () => {
-    const stored = getStorage<any[]>('user_routes', [])
-    userRoutes.value = Array.isArray(stored) ? stored : []
-  }
-  const openRoute = (r: any) => {
-    router.push({ path: '/routes', query: { load: r.id } })
-  }
-  const removeRoute = (id: number) => {
-    const list = getStorage<any[]>('user_routes', []).filter((x: any) => x.id !== id)
-    localStorage.setItem('user_routes', JSON.stringify(list))
-    loadUserRoutes()
-    ElMessage.success({ message: '已删除路线', duration: 1500 })
-  }
-
-  // Chart Logic
-  let chartInstance: any = null
-  const initChart = async () => {
-    if (!chartRef.value || currentTab.value !== 'info') return
-    const echarts = await import('echarts')
-    chartInstance = echarts.init(chartRef.value)
-    const option = {
-      tooltip: { trigger: 'axis' },
-      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-      xAxis: { type: 'category', boundaryGap: false, data: ['1月', '2月', '3月', '4月', '5月', '6月'] },
-      yAxis: { type: 'value' },
-      series: [
-        {
-          name: '浏览热度',
-          type: 'line',
-          smooth: true,
-          lineStyle: { color: '#10B981', width: 3 },
-          areaStyle: {
-            color: new (echarts as any).graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: 'rgba(16, 185, 129, 0.5)' },
-              { offset: 1, color: 'rgba(16, 185, 129, 0.0)' }
-            ])
-          },
-          data: [15, 30, 45, 32, 60, 85]
-        }
-      ]
-    }
-    chartInstance.setOption(option)
-  }
-
-  watch(currentTab, async (newVal) => {
-    if (newVal === 'info') {
-      await nextTick()
-      await initChart()
-    } else if (newVal === 'routes') {
-      loadUserRoutes()
-    } else if (newVal === 'bookings') {
-      loadBookings()
-    } else {
-      if (chartInstance) {
-        chartInstance.dispose()
-        chartInstance = null
-      }
-    }
-  })
-
-  const onOrdersUpdated = () => {
-    if (currentTab.value === 'bookings') {
-      loadBookings()
-    }
-  }
-  window.addEventListener('orders-updated', onOrdersUpdated)
-  
-  const getUserStatusType = (status: string) => {
-    const map: Record<string, string> = { '已支付': 'success', '待支付': 'warning', '已取消': 'info', '已完成': 'success' }
-    return map[status] || 'info'
-  }
-
-onActivated(() => {
-  if (currentTab.value === 'bookings') {
-    loadBookings()
+  // 拉取最新数据：订单与路线可能刚在其他页面产生
+  orderStore.loadRaw()
+  routeStore.loadSaved()
+  userStore.loadFavorites()
+  if (currentTab.value === 'info') {
+    await nextTick()
+    initChart()
   }
 })
 
-onUnmounted(() => {
-  window.removeEventListener('orders-updated', onOrdersUpdated)
-  if (chartInstance) {
-    chartInstance.dispose()
-    chartInstance = null
+watch(currentTab, async (newVal) => {
+  if (newVal === 'info') {
+    await nextTick()
+    await initChart()
+  } else {
+    if (chartInstance) {
+      chartInstance.dispose()
+      chartInstance = null
+    }
   }
+})
+
+onActivated(() => {
+  orderStore.loadRaw()
 })
 </script>
 

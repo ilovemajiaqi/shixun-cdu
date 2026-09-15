@@ -150,12 +150,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Filter, Location, Timer, Star, StarFilled } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { useAttractionStore } from '@/stores/attraction'
+import { useUserStore } from '@/stores/user'
+import { useOrderStore } from '@/stores/order'
 
 const router = useRouter()
+
+// 数据全部来自 store：景点列表、收藏、用户、订单都各由唯一数据源维护。
+const attractionStore = useAttractionStore()
+const userStore = useUserStore()
+const orderStore = useOrderStore()
+
+// 触发一次加载（store 内部有 loaded 标记，重复调用不会重复读盘）
+attractionStore.load()
 
 const bookingDialogVisible = ref(false)
 const currentSpot = ref<any>(null)
@@ -166,47 +177,18 @@ const bookingForm = ref({
   phone: ''
 })
 const submitting = ref(false)
-const userFavorites = ref<number[]>([])
 
-// Load favorites from localStorage
-const loadFavorites = () => {
-  const stored = localStorage.getItem('user_favorites')
-  if (stored) {
-    userFavorites.value = JSON.parse(stored).map((f: any) => f.id)
-  }
-}
-loadFavorites()
-
-const isFavorite = (id: number) => userFavorites.value.includes(id)
+const isFavorite = (id: number) => userStore.isFavorite(id)
 
 const toggleFavorite = (spot: any) => {
-  const user = localStorage.getItem('user')
-  if (!user) {
+  if (!userStore.isLoggedIn) {
     ElMessage.warning({ message: '请先登录后收藏', duration: 1500 })
     router.push('/login')
     return
   }
 
-  const stored = JSON.parse(localStorage.getItem('user_favorites') || '[]')
-  const index = stored.findIndex((f: any) => f.id === spot.id)
-
-  if (index > -1) {
-    // Remove
-    stored.splice(index, 1)
-    ElMessage.success({ message: '已取消收藏', duration: 1500 })
-  } else {
-    // Add
-    stored.push({
-      id: spot.id,
-      name: spot.name,
-      desc: spot.description,
-      image: spot.mainImage
-    })
-    ElMessage.success({ message: '收藏成功', duration: 1500 })
-  }
-
-  localStorage.setItem('user_favorites', JSON.stringify(stored))
-  loadFavorites() // Refresh local state
+  const added = userStore.toggleFavorite(spot)
+  ElMessage.success({ message: added ? '收藏成功' : '已取消收藏', duration: 1500 })
 }
 
 const filters = ref({
@@ -214,194 +196,12 @@ const filters = ref({
   sort: 'default'
 })
 
-// Chengdu Tourism Data
-const attractions = ref([
-  {
-    id: 1,
-    name: '宽窄巷子',
-    region: '市区经典',
-    description: '由宽巷子、窄巷子、井巷子三条平行老街组成，是成都遗留下来的较成规模的清朝古街道。青砖黛瓦、门头匾额保存完好，如今聚合成茶馆、川剧变脸小剧场、手作市集与川味小吃摊，闲坐一下午便是最地道的成都节奏。',
-    price: 0,
-    openTime: '全天开放',
-    rating: 4.8,
-    commentCount: 3260,
-    mainImage: '/images/chengdu/kuanzhai.jpg',
-    images: [
-      '/images/chengdu/lanterns.jpg',
-      '/images/chengdu/city-night.jpg'
-    ]
-  },
-  {
-    id: 2,
-    name: '锦里古街',
-    region: '市区经典',
-    description: '紧邻武侯祠的仿古商业街，以三国文化与成都民俗为主题。夜幕降临时数百盏红灯次第亮起，皮影戏、糖画、三大炮与张飞牛肉的摊子沿街铺开，被称为“成都版清明上河图”。',
-    price: 0,
-    openTime: '全天开放（夜间灯光最佳）',
-    rating: 4.7,
-    commentCount: 4100,
-    mainImage: '/images/chengdu/jinli.jpg',
-    images: [
-      '/images/chengdu/lanterns.jpg',
-      '/images/chengdu/night-market.jpg'
-    ]
-  },
-  {
-    id: 3,
-    name: '武侯祠',
-    region: '市区经典',
-    description: '全国影响最大的三国遗迹博物馆，纪念诸葛亮与蜀汉群臣，由惠陵、汉昭烈庙、武侯祠三部分组成。红墙夹道与翠竹相映，是成都最具人文厚度的一处封地。',
-    price: 50,
-    openTime: '08:00 - 18:00',
-    rating: 4.7,
-    commentCount: 2890,
-    mainImage: '/images/chengdu/wuhouci.jpg',
-    images: [
-      '/images/chengdu/tower.jpg',
-      '/images/chengdu/garden-lush.jpg'
-    ]
-  },
-  {
-    id: 4,
-    name: '杜甫草堂',
-    region: '市区经典',
-    description: '唐代诗人杜甫流寓成都时的故居，在此写下《茅屋为秋风所破歌》等名篇。园内梅竹成林、水榭回廊交错，是闹市中少见的一处清幽园林。',
-    price: 50,
-    openTime: '08:00 - 18:00',
-    rating: 4.8,
-    commentCount: 2140,
-    mainImage: '/images/chengdu/dufu.jpg',
-    images: [
-      '/images/chengdu/bamboo.jpg',
-      '/images/chengdu/garden-lush.jpg'
-    ]
-  },
-  {
-    id: 5,
-    name: '成都大熊猫繁育研究基地',
-    region: '熊猫生态',
-    description: '世界最大的大熊猫迁地保护与繁育基地，园区模拟野生栖息环境，竹林掩映、溪流穿行。清晨是熊猫最活跃的时段，可近距离观察到进食、攀爬与幼崽育幼场景。',
-    price: 55,
-    openTime: '07:30 - 18:00',
-    rating: 5.0,
-    commentCount: 6800,
-    mainImage: '/images/chengdu/panda-base.jpg',
-    images: [
-      '/images/chengdu/panda-cute.jpg',
-      '/images/chengdu/park-green.jpg'
-    ]
-  },
-  {
-    id: 6,
-    name: '人民公园',
-    region: '市区经典',
-    description: '成都最老牌的市民公园，鹤鸣茶社的竹椅盖碗茶已延续百年。掏耳朵的师傅、围坐打牌的老人、湖边划船的家庭，共同构成成都慢生活最生动的切面。',
-    price: 0,
-    openTime: '06:00 - 22:00',
-    rating: 4.6,
-    commentCount: 1780,
-    mainImage: '/images/chengdu/renmin-park.jpg',
-    images: [
-      '/images/chengdu/tea-plantation.jpg',
-      '/images/chengdu/park-green.jpg'
-    ]
-  },
-  {
-    id: 7,
-    name: '都江堰',
-    region: '世界遗产',
-    description: '始建于战国时期、由李冰主持修建的无坝引水工程，两千余年来仍在灌溉成都平原，是世界水利史上的奇迹。鱼嘴分水、飞沙堰泄洪、宝瓶口引水，三处主体至今清晰可辨。',
-    price: 80,
-    openTime: '08:00 - 18:00',
-    rating: 4.9,
-    commentCount: 3520,
-    mainImage: '/images/chengdu/dujiangyan.jpg',
-    images: [
-      '/images/chengdu/ancient-bridge.jpg',
-      '/images/chengdu/river-night.jpg'
-    ]
-  },
-  {
-    id: 8,
-    name: '青城山',
-    region: '世界遗产',
-    description: '中国道教发源地之一，素有“青城天下幽”之称。前山宫观林立、林木蔽日，后山溪瀑纵横、栈道悬空。拾级而上，苔痕石阶与道家清音相伴，是避暑养心的绝佳去处。',
-    price: 80,
-    openTime: '08:00 - 17:30',
-    rating: 4.8,
-    commentCount: 2960,
-    mainImage: '/images/chengdu/qingcheng.jpg',
-    images: [
-      '/images/chengdu/mountain-mist.jpg',
-      '/images/chengdu/bamboo.jpg'
-    ]
-  },
-  {
-    id: 9,
-    name: '西岭雪山',
-    region: '近郊山水',
-    description: '因杜甫“窗含西岭千秋雪”而得名的近郊雪山，海拔 5364 米，是成都市区可见的最高峰。冬季为西南地区规模最大的滑雪场，夏季草甸与云海同样开阔壮丽。',
-    price: 120,
-    openTime: '09:00 - 17:00',
-    rating: 4.7,
-    commentCount: 1620,
-    mainImage: '/images/chengdu/xiling.jpg',
-    images: [
-      '/images/chengdu/mountain-mist.jpg',
-      '/images/chengdu/park-green.jpg'
-    ]
-  },
-  {
-    id: 10,
-    name: '川剧艺术中心',
-    region: '市区经典',
-    description: '集中呈现川剧精髓的专业剧场，以变脸、吐火、滚灯、手影戏为主打。演出前可体验勾脸谱、试戏服，台上锣鼓与锣腔一响，蜀地数百年的声腔记忆扑面而来。',
-    price: 180,
-    openTime: '14:00 - 21:30',
-    rating: 4.9,
-    commentCount: 1350,
-    mainImage: '/images/chengdu/chuanju.jpg',
-    images: [
-      '/images/chengdu/tower.jpg',
-      '/images/chengdu/lanterns.jpg'
-    ]
-  },
-])
-
-// Load attractions from localStorage if available (sync with admin)
-const loadAttractions = () => {
-  const stored = localStorage.getItem('attractions_data')
-  if (stored) {
-    // Merge or replace? For simplicity, we use the stored data if it exists,
-    // assuming admin manages the "truth".
-    // However, the admin data might lack 'rating', 'commentCount', 'images' array (admin only has mainImage).
-    // So we need to be careful.
-    
-    const storedAttractions = JSON.parse(stored)
-    
-    // Map stored attractions to preserve missing fields from default mocks if ID matches, 
-    // or provide defaults for new ones.
-    const merged = storedAttractions.map((sa: any) => {
-      const existing = attractions.value.find(a => a.id === sa.id)
-      return {
-        ...sa,
-        rating: existing?.rating || 5.0,
-        commentCount: existing?.commentCount || 0,
-        images: existing?.images || (sa.mainImage ? [sa.mainImage] : [])
-      }
-    })
-    
-    attractions.value = merged
-  }
-}
-loadAttractions()
-
 const filteredAttractions = computed(() => {
-  let result = attractions.value
+  // published 过滤掉后台下架的景点
+  let result = attractionStore.published
   if (filters.value.region) {
     result = result.filter(spot => spot.region.includes(filters.value.region))
   }
-  // Sort logic (simplified)
   if (filters.value.sort === 'rating') {
     result = [...result].sort((a, b) => b.rating - a.rating)
   } else if (filters.value.sort === 'hot') {
@@ -417,8 +217,7 @@ const applyFilters = () => {
 }
 
 const openBooking = (spot: any) => {
-  const user = localStorage.getItem('user')
-  if (!user) {
+  if (!userStore.isLoggedIn) {
     ElMessage.warning({ message: '请先登录后预订', duration: 1500 })
     router.push('/login')
     return
@@ -427,7 +226,7 @@ const openBooking = (spot: any) => {
   bookingForm.value = {
     date: '',
     count: 1,
-    name: JSON.parse(user).username || '',
+    name: userStore.username || '',
     phone: ''
   }
   bookingDialogVisible.value = true
@@ -438,41 +237,31 @@ const submitBooking = () => {
     ElMessage.warning({ message: '请填写完整预订信息', duration: 1500 })
     return
   }
-  
+
   submitting.value = true
   setTimeout(() => {
-    // Save to localStorage (Unified 'all_orders')
-    const userObj = JSON.parse(localStorage.getItem('user') || '{}')
-    const username = userObj.username || bookingForm.value.name || '游客'
-    
-    const newOrder = {
-      orderId: `ORD-${Date.now()}`,
-      user: username,
+    // 下单逻辑收拢在 orderStore.createOrder，编号规则与字段统一
+    orderStore.createOrder({
+      username: userStore.username || bookingForm.value.name || '游客',
       spot: currentSpot.value.name,
       date: new Date(bookingForm.value.date).toLocaleDateString(),
       quantity: bookingForm.value.count,
       price: currentSpot.value.price || 0,
-      total: (currentSpot.value.price || 0) * bookingForm.value.count,
-      status: 'paid', // Default to paid for demo
-      createdAt: Date.now()
-    }
-
-    const allOrders = JSON.parse(localStorage.getItem('all_orders') || '[]')
-    allOrders.unshift(newOrder)
-    localStorage.setItem('all_orders', JSON.stringify(allOrders))
-
-    // Legacy support (optional, can remove if UserView is updated)
-    // const existingBookings = JSON.parse(localStorage.getItem('user_bookings') || '[]')
-    // existingBookings.unshift({ ...newOrder, id: Date.now(), spotName: newOrder.spot, count: newOrder.quantity, status: '已支付' })
-    // localStorage.setItem('user_bookings', JSON.stringify(existingBookings))
+      status: 'paid'
+    })
 
     submitting.value = false
     bookingDialogVisible.value = false
     ElMessage.success({ message: '预订成功！凭短信入园', duration: 1500 })
-    // Reset
     bookingForm.value.date = ''
   }, 1500)
 }
+
+onMounted(() => {
+  // 收藏与景点列表都以最新存储为准（例如后台改过数据后返回本页）
+  userStore.loadFavorites()
+  attractionStore.load(true)
+})
 </script>
 
 <style scoped>

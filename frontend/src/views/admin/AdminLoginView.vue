@@ -63,8 +63,10 @@ import { useRouter } from 'vue-router'
 import { Management } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import api from '@/utils/api'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 const loading = ref(false)
 const form = ref({
   username: 'admin',
@@ -89,11 +91,10 @@ const handleLogin = async () => {
     const user = response.data
     
     if (user.role === 'ADMIN') {
-      localStorage.setItem('admin_token', 'mock_admin_token')
-      localStorage.setItem('admin_user', JSON.stringify({
+      userStore.setAdminLogin('mock_admin_token', {
         username: user.username,
         role: user.role
-      }))
+      })
       ElMessage.success({ message: '登录成功', duration: 1500 })
       router.push('/admin/dashboard')
     } else {

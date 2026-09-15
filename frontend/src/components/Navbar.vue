@@ -13,10 +13,10 @@
     <el-menu-item index="/">首页</el-menu-item>
     <el-menu-item index="/attractions">景点推荐</el-menu-item>
     <el-menu-item index="/routes">路线规划</el-menu-item>
-    <el-menu-item index="/user" v-if="user.username">
+    <el-menu-item index="/user" v-if="userStore.isLoggedIn">
       <div class="flex items-center gap-2">
-        <el-avatar :size="28" :src="user.avatar">{{ user.username?.charAt(0).toUpperCase() }}</el-avatar>
-        <span class="hidden md:inline">{{ user.username }}</span>
+        <el-avatar :size="28" :src="userStore.profile.avatar">{{ userStore.username.charAt(0).toUpperCase() }}</el-avatar>
+        <span class="hidden md:inline">{{ userStore.username }}</span>
       </div>
     </el-menu-item>
     <el-menu-item index="/login" v-else>登录/注册</el-menu-item>
@@ -24,21 +24,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
 const activeIndex = ref(route.path)
 
-const user = ref<any>(JSON.parse(localStorage.getItem('user') || '{}'))
-const loadUser = () => {
-  user.value = JSON.parse(localStorage.getItem('user') || '{}')
-}
-
-onMounted(() => {
-  window.addEventListener('storage', (e) => {
-    if (e.key === 'user') loadUser()
-  })
-  window.addEventListener('user-updated', loadUser)
-})
+// 直接读 store：登录/登出/改资料后自动重渲染，不再需要 user-updated 事件桥接。
+const userStore = useUserStore()
 </script>

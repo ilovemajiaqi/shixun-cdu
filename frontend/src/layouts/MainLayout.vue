@@ -87,18 +87,19 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { HomeFilled, User, Promotion, Expand, Bell, ArrowDown, List, Star } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
 const router = useRouter()
 
 const activeMenu = computed(() => route.fullPath)
 
-const user = JSON.parse(localStorage.getItem('user') || '{}')
-const username = computed(() => user.username || '游客')
+const userStore = useUserStore()
+const username = computed(() => userStore.username || '游客')
 
 const handleCommand = (command: string) => {
   if (command === 'logout') {
-    localStorage.removeItem('user')
+    userStore.logout()
     ElMessage.success({ message: '已退出登录', duration: 1500 })
     router.push('/login')
   } else if (command === 'profile') {
